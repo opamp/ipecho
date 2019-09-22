@@ -17,30 +17,34 @@
       ;#+ccl `(:v4 nil :v6 nil)
       ))
 
-(defun response-to-client (conn)
+(defun response-to-client (conn &optional silent)
   (let ((client-addr (get-peer-address conn)))
     (unwind-protect
          (progn
+           (unless silent
+             (format t "[access] ~A~%" client-addr))
            (format (socket-stream conn) "~A" client-addr)
            (force-output (socket-stream conn)))
       (progn
-        (format t "socket closed~%")
+        (unless silent
+          (format t "[closed]~%"))
         (socket-close conn)))))
 
-(defun start-server (&key (host "127.0.0.1") (port 9000))
+(defun start-server (&key (host "127.0.0.1") (port 9000) silent)
   (let ((threads)
         (socket (socket-listen host port)))
     (handler-case
         (unwind-protect (loop
                            (let ((conn (socket-accept socket :element-type 'character)))
-                             (push (make-thread (lambda () (response-to-client conn))) threads)))
+                             (push (make-thread (lambda () (response-to-client conn silent))) threads)))
           (progn
             (mapcar #'join-thread threads)
             (socket-close socket)))
       (condition (c)
         (mapcar #'join-thread threads)
         (socket-close socket)
-        (format t "stop~%")))))
+        (unless silent
+          (format t "stop~%"))))))
 
 (defun access (host &key (port 9000))
   (let ((socket (socket-connect host port :element-type 'character)))
