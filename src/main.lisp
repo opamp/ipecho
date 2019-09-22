@@ -21,18 +21,26 @@
   (let ((client-addr (get-peer-address conn)))
     (unwind-protect
          (progn
-           (sleep 5)
            (format (socket-stream conn) "~A" client-addr)
            (force-output (socket-stream conn)))
-      (socket-close conn))))
+      (progn
+        (format t "socket closed~%")
+        (socket-close conn)))))
 
 (defun start-server (&key (host "127.0.0.1") (port 9000))
-  (let ((socket (socket-listen host port)))
-    (unwind-protect (loop
-                       (let ((conn (socket-accept socket :element-type 'character)))
-                         (make-thread (lambda () (response-to-client conn)))))
-      (progn
-        (socket-close socket)))))
+  (let ((threads)
+        (socket (socket-listen host port)))
+    (handler-case
+        (unwind-protect (loop
+                           (let ((conn (socket-accept socket :element-type 'character)))
+                             (push (make-thread (lambda () (response-to-client conn))) threads)))
+          (progn
+            (mapcar #'join-thread threads)
+            (socket-close socket)))
+      (condition (c)
+        (mapcar #'join-thread threads)
+        (socket-close socket)
+        (format t "stop~%")))))
 
 (defun access (host &key (port 9000))
   (let ((socket (socket-connect host port :element-type 'character)))
