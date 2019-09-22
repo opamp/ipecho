@@ -2,7 +2,7 @@
   :version "0.1.0"
   :author "Masahiro NAGATA"
   :license "MIT"
-  :depends-on ()
+  :depends-on ("usocket")
   :components ((:module "src"
                 :components
                 ((:file "main"))))
