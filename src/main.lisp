@@ -17,15 +17,16 @@
       ))
 
 (defun start-server (&key (host "127.0.0.1") (port 9000))
-  (let* ((socket (socket-listen host port))
-         (conn (socket-accept socket :element-type 'character)))
-    (unwind-protect
-         (let ((client-addr (get-peer-address conn)))
-           (format (socket-stream conn) "~A" client-addr)
-           (force-output (socket-stream conn)))
+  (let ((socket (socket-listen host port)))
+    (unwind-protect (loop
+                       (let* ((conn (socket-accept socket :element-type 'character))
+                              (client-addr (get-peer-address conn)))
+                         (unwind-protect
+                              (progn
+                                (format (socket-stream conn) "~A" client-addr)
+                                (force-output (socket-stream conn)))
+                           (socket-close conn))))
       (progn
-        (format t "Closed~%")
-        (socket-close conn)
         (socket-close socket)))))
 
 (defun access (host &key (port 9000))
