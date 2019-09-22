@@ -1,17 +1,5 @@
 # Ipecho
 
-## Usage
+## 概要
+サーバーを動かしてクライアントからアクセスするとクライアントのIPアドレスを返してくるだけのプログラム。
 
-## Installation
-
-## Author
-
-* Masahiro NAGATA (opampg@gmail.com)
-
-## Copyright
-
-Copyright (c) 2019 Masahiro NAGATA (opampg@gmail.com)
-
-## License
-
-Licensed under the MIT License.

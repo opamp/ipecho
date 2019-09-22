@@ -1,6 +1,7 @@
 (defpackage ipecho
   (:use :cl
-        :usocket)
+        :usocket
+        :bordeaux-threads)
   (:export :get-host-by-name
            :start-server
            :access))

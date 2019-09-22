@@ -2,7 +2,8 @@
   :version "0.1.0"
   :author "Masahiro NAGATA"
   :license "MIT"
-  :depends-on ("usocket")
+  :depends-on ("usocket"
+               "bordeaux-threads")
   :components ((:module "src"
                 :components
                 ((:file "main"))))
