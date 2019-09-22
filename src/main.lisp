@@ -23,7 +23,9 @@
          (progn
            (unless silent
              (format t "[access] ~A~%" client-addr))
-           (format (socket-stream conn) "~A" client-addr)
+           (if (= (length client-addr) 4)
+               (format (socket-stream conn) "~{~A~^.~}" (coerce client-addr 'list))
+               (format (socket-stream conn) "~{~x~x~^:~}" (coerce client-addr 'list)))
            (force-output (socket-stream conn)))
       (progn
         (socket-close conn)
