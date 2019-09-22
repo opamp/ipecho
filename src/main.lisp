@@ -26,25 +26,26 @@
            (format (socket-stream conn) "~A" client-addr)
            (force-output (socket-stream conn)))
       (progn
+        (socket-close conn)
         (unless silent
-          (format t "[closed]~%"))
-        (socket-close conn)))))
+          (format t "[closed]~%"))))))
 
 (defun start-server (&key (host "127.0.0.1") (port 9000) silent)
   (let ((threads)
         (socket (socket-listen host port)))
     (handler-case
-        (unwind-protect (loop
-                           (let ((conn (socket-accept socket :element-type 'character)))
-                             (push (make-thread (lambda () (response-to-client conn silent))) threads)))
+        (unwind-protect
+             (loop
+                (let ((conn (socket-accept socket :element-type 'character)))
+                  (setf threads (remove-if (lambda (x) (not (thread-alive-p x))) threads))
+                  (push (make-thread (lambda () (response-to-client conn silent))) threads)))
           (progn
-            (mapcar #'join-thread threads)
             (socket-close socket)))
       (condition (c)
         (mapcar #'join-thread threads)
         (socket-close socket)
         (unless silent
-          (format t "stop~%"))))))
+          (format t "~A~%stop~%" c))))))
 
 (defun access (host &key (port 9000))
   (let ((socket (socket-connect host port :element-type 'character)))
